@@ -1,1 +1,18 @@
+version: 0.2
 
+phases:
+  install:
+    runtime-versions:
+      java: openjdk11
+    commands:
+      - echo Install phase is starting...
+      - apt-get update
+      - apt-get install -y maven
+  build:
+    commands:
+      - echo Build phase is starting...
+      - mvn clean package
+  post_build:
+    commands:
+      - echo Post build phase is starting...
+      - echo Build completed successfully.
