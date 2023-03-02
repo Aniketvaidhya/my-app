@@ -6,7 +6,7 @@ phases:
       java: corretto17
     commands:
       - echo Install phase is starting...
-      - yum update
+      - yum update -y
       - yum install -y maven
   build:
     commands:
