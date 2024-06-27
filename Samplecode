@@ -1,0 +1,75 @@
+To run your Selenium automation project using Java and Chrome in a Docker container, follow these steps:
+
+1. **Set Up Dockerfile**:
+   Create a Dockerfile to define your container environment. Here's an example:
+
+   ```Dockerfile
+   FROM openjdk:11-jre-slim
+
+   # Install necessary packages
+   RUN apt-get update && apt-get install -y \
+       wget \
+       unzip \
+       xvfb \
+       libxi6 \
+       libgconf-2-4
+
+   # Install Chrome
+   RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
+       && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+       && apt-get update \
+       && apt-get install -y google-chrome-stable
+
+   # Install ChromeDriver
+   RUN CHROME_DRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE` \
+       && wget -N https://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip \
+       && unzip chromedriver_linux64.zip \
+       && mv chromedriver /usr/local/bin/ \
+       && rm chromedriver_linux64.zip
+
+   # Set display port to avoid crashes
+   ENV DISPLAY=:99
+
+   # Copy your project files
+   COPY . /usr/src/app
+   WORKDIR /usr/src/app
+
+   # Run your test script
+   CMD ["java", "-jar", "your-test-script.jar"]
+   ```
+
+2. **Build the Docker Image**:
+   Navigate to the directory containing your Dockerfile and build the Docker image:
+
+   ```sh
+   docker build -t selenium-java-chrome .
+   ```
+
+3. **Run the Docker Container**:
+   Run the container using the built image:
+
+   ```sh
+   docker run -it selenium-java-chrome
+   ```
+
+4. **Optional - Running in Headless Mode**:
+   If you prefer to run tests in headless mode, update your Selenium Chrome options in your Java code:
+
+   ```java
+   ChromeOptions options = new ChromeOptions();
+   options.addArguments("--headless");
+   options.addArguments("--no-sandbox");
+   options.addArguments("--disable-dev-shm-usage");
+   WebDriver driver = new ChromeDriver(options);
+   ```
+
+5. **Executing the Tests**:
+   Ensure your Docker container is configured to execute your tests when it starts. If you need to run the tests interactively, you can start a shell session in the container and run the tests manually:
+
+   ```sh
+   docker run -it selenium-java-chrome /bin/bash
+   # Then run your tests inside the container
+   java -jar your-test-script.jar
+   ```
+
+This setup will allow you to run your Selenium automation scripts within a Docker container using Chrome. If you need to visualize the tests, consider using tools like VNC server to view the browser running in the container.
